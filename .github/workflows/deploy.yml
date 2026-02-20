@@ -1,60 +1,29 @@
-name: this pilpline will host flask app
-on: 
-  workflow_dispatch: 
+name: this pipeline will host flask app
+
+on:
+  workflow_dispatch:
 
 jobs:
- build_and_test:
-  runs-on: ubuntu-latest
-  steps:
-    -  name: checkout-repository
-       uses: actions/checkout@v3
-    -  name: install dependencies
-       run: |
-         sudo apt update
-         sudo apt install docker-compose curl -y
-         sudo usermod -aG docker $USER
-         newgrp docker
+  common:
+    uses: ./.github/workflows/common.yml
+    secrets:
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
-    - name: gcloud auth login
-      uses: 'google-github-actions/auth@v2'
-      with:
-        credentials_json: '${{ secrets.GCP_SA_KEY }}'
-
-    -  name: configure artifact registry
-       run: |
-         gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT }}
-
-    - name: build
-      run: | 
-          sudo docker-compose up --build -d
-
-    - name: test
-      run: | 
-           curl http://0.0.0.0:80
-
-    - name: push
-      run: | 
-           docker tag nginx us-central1-docker.pkg.dev/suni1994/nginx/nginx:latest
-           docker push us-central1-docker.pkg.dev/suni1994/nginx/nginx:latest
-           docker push us-central1-docker.pkg.dev/suni1994/nginx/flask:latest
-
-
- deploy:
-    needs: build_and_test
+  build_and_test:
+    needs: common
     runs-on: ubuntu-latest
     steps:
-     - name: executing remote ssh commands using password
-       uses: appleboy/ssh-action@v1
-       with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          script: | 
-            docker system prune -af
-            docker-compose up -d
-            curl 0.0.0.0:5000
-    
-       
-          
-  
+      - name: install dependencies
+        run: |
+          sudo apt update
+          sudo apt install docker-compose curl -y
+
+      - name: configure artifact registry
+        run: |
+          gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT }}
+
+      - name: build
+        run: docker-compose up --build -d
+
+      - name: test
+        run: curl http://0.0.0.0:80
