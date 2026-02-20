@@ -1,0 +1,19 @@
+name: Common Setup
+
+on:
+  workflow_call:
+    secrets:
+      GCP_SA_KEY:
+        required: true
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v3
+
+      - name: gcloud auth login
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
