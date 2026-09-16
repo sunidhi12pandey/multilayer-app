@@ -4,7 +4,6 @@ services:
   flask-app:
     build: .
 #    image: us-central1-docker.pkg.dev/suni1994/nginx/flask:latest
-    image: us-central1-docker.pkg.dev/suni1994/nginx/flasks:latest
     container_name: flask_app
     ports:
       - "5000:5000"
@@ -17,5 +16,7 @@ services:
       - "80:80"
     volumes:
  # image: us-central1-docker.pkg.dev/suni1994/nginx/flask:latest   
-      - ./nginx/default.conf:/etc/nginxs
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - flask-app
 
