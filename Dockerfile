@@ -1,6 +1,6 @@
 # Multi-stage: Install and run separately
 # Multi-stage: Install and run separately
-FROM python:3.11-slim AS base
+FROM python:3.12-slim AS base
 
 # Multi-stage: Install and run separately
 WORKDIR /app
